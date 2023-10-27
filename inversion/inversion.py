@@ -14,9 +14,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-capteur_riviere = pd.read_csv("/Users/marcoul/Desktop/Mines_2A/Molonari/TP/point034_capteur_riviere_cleaned.csv", sep = ',', names = ['dates', 'tension', 'temperature_riviere'], skiprows=1)
-capteur_ZH = pd.read_csv("/Users/marcoul/Desktop/Mines_2A/Molonari/TP/point034_capteur_ZH_cleaned.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
-etalonage_capteur_riv = pd.read_csv("/Users/marcoul/Desktop/Mines_2A/Molonari/MOLONARI1D/pyheatmy2022/configuration/pressure_sensors/P508.csv")
+capteur_riviere = pd.read_csv("raw_data/Point034/point034_P_measures.csv", sep = ',', names = ['dates', 'tension', 'temperature_riviere'], skiprows=1)
+capteur_ZH = pd.read_csv("raw_data/Point034/point034_T_measures.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
+etalonage_capteur_riv = pd.read_csv('configuration/pressure_sensors/P508.csv')
 
 def convertDates(df: pd.DataFrame):
     """
@@ -43,31 +43,30 @@ def convertDates(df: pd.DataFrame):
                "%Y/%m/%d %H:%M",    "%Y/%m/%d %I:%M %p",
                None)
     times = df[df.columns[0]]
+
     for f in formats:
         try:
             # Convert strings to datetime objects
-            new_times = pd.to_datetime(times, format=f)
-            # Convert datetime series to numpy array of integers (timestamps)
-            new_ts = new_times.values.astype(np.int64)
-            # If times are not ordered, this is not the appropriate format
-            test = np.sort(new_ts) - new_ts
-            if np.sum(abs(test)) != 0 :
-                #print("Order is not the same")
-                raise ValueError()
-            # Else, the conversion is a success
-            #print("Found format ", f)
-            df[df.columns[0]] = new_times
-            return
-        
+            new_times = pd.to_datetime(times, format=f, errors='coerce')
+            # Check for NaN values
+            if new_times.isna().any():
+                raise ValueError("NaN values found in date conversion.")
+            
+            # Compare min and max timestamps to validate the conversion
+            if new_times.min() == new_times.max():
+                df[df.columns[0]] = new_times
+                return
         except ValueError:
-            #print("Format ", f, " not valid")
             continue
     
-    # None of the known format are valid
+    # None of the known formats are valid
     raise ValueError("Cannot convert dates: No known formats match your data!")
 
-convertDates(capteur_riviere)
-convertDates(capteur_ZH)
+try:
+    convertDates(capteur_riviere)
+    convertDates(capteur_ZH)
+except ValueError as e:
+    print(e)
 
 # set seed for reproducibility
 np.random.seed(0)

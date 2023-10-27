@@ -14,9 +14,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-capteur_riviere = pd.read_csv("raw_data/point13_29_07_15/p505_Hobo33_29_07_15.csv", sep = ',', names = ['dates', 'tension', 'temperature_riviere'], skiprows=1)
-capteur_ZH = pd.read_csv("raw_data/point13_29_07_15/t503_hobo1_29_07_15.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
-etalonage_capteur_riv = pd.read_csv('configuration/pressure_sensors/P507.csv')
+capteur_riviere = pd.read_csv("inversion/data_cleanded/point034_capteur_riviere_cleaned.csv", sep = ',', names = ['dates', 'tension', 'temperature_riviere'], skiprows=1)
+capteur_ZH = pd.read_csv("inversion/data_cleanded/point034_capteur_ZH_cleaned.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
+etalonage_capteur_riv = pd.read_csv('configuration/pressure_sensors/P508.csv')
 
 def convertDates(df: pd.DataFrame):
     """
@@ -151,6 +151,7 @@ for i, id in enumerate(col.get_id_sensors()):
 
 plt.subplots_adjust(wspace=0.05)
 plt.show()
+
 #Inversion MMC
 
 priors_couche_1 = {
@@ -171,7 +172,7 @@ col.compute_mcmc(
     sigma2=1.0
 )
 
-fig, axes = plt.subplots(1, 4, figsize=(30, 20))
+fig, axes = plt.subplots(2, 4, figsize=(30, 20))
 
 for id_layer, layer_distribs in enumerate(col.get_all_params()):
     axes[id_layer, 0].hist(layer_distribs[::, 0])
@@ -252,11 +253,11 @@ On va maintenant afficher un graphe avecv les quantiles de débit à profondeur 
 
 n = 0
 
-plt.plot(col.get_flows_solve(col._real_z[n]), label="Débit modèle")
+plt.plot(temps_en_jours, col.get_flows_solve(col._real_z[n]), label="Débit modèle")
 for q in col.get_quantiles():
-    plt.plot(col.get_flows_quantile(q)[n,:], label=f"Quantile {q}")
+    plt.plot(temps_en_jours, col.get_flows_quantile(q)[n,:], label=f"Quantile {q}")
 plt.xlabel("Temps (j)")
-plt.ylabel("Débit (m/s)")
+plt.ylabel("Débit ($m^3/s$)")
 plt.legend()
 plt.title(f"Quantiles de débit à {col._real_z[n]} m de profondeur")
 plt.show()

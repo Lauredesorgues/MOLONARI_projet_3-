@@ -1,7 +1,10 @@
 Point_Name,Point14
 P_Sensor_Name,p507
 Implantation_Date,29_07_15
-Meas_date,2015-07-23 15:30:00
+Meas_date, 
 River_Deb,
 Delta_h,
+<<<<<<< HEAD
 Periode,5 days 17:15:00
+=======
+>>>>>>> b7cbc93465565ab0cc3154766be4ad0eaeb43c93

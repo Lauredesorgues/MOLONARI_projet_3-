@@ -14,9 +14,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-capteur_riviere = pd.read_csv("raw_data/point13_29_07_15/p505_Hobo33_29_07_15.csv", sep = ',', names = ['dates', 'tension', 'temperature_riviere'], skiprows=1)
-capteur_ZH = pd.read_csv("raw_data/point13_29_07_15/t503_hobo1_29_07_15.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
-etalonage_capteur_riv = pd.read_csv('configuration/pressure_sensors/P507.csv')
+capteur_riviere = pd.read_csv("raw_data/Point034/point034_P_measures.csv", sep = ',', names = ['dates', 'tension', 'temperature_riviere'], skiprows=1)
+capteur_ZH = pd.read_csv("raw_data/Point034/point034_T_measures.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
+etalonage_capteur_riv = pd.read_csv('configuration/pressure_sensors/P508.csv')
 
 def convertDates(df: pd.DataFrame):
     """
@@ -43,10 +43,11 @@ def convertDates(df: pd.DataFrame):
                "%Y/%m/%d %H:%M",    "%Y/%m/%d %I:%M %p",
                None)
     times = df[df.columns[0]]
+
     for f in formats:
         try:
             # Convert strings to datetime objects
-            new_times = pd.to_datetime(times, format=f)
+            new_times = pd.to_datetime(times, format=f, errors='coerce')
             # Convert datetime series to numpy array of integers (timestamps)
             new_ts = new_times.values.astype(np.int64)
             # If times are not ordered, this is not the appropriate format

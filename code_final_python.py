@@ -14,7 +14,6 @@ from scipy import stats
 # on récupère les informations du dossier
 dossier = './raw_data'
 contenuDossier = os.listdir(dossier)
-print(contenuDossier)
 nombrePoints = 0
 nomPoints = []
 numeroPoints = []
@@ -24,7 +23,6 @@ for x in contenuDossier:
         nombrePoints += 1
         nomPoints.append(x)
         numeroPoints.append(x[5:7])
-print(numeroPoints)
 def read_csv (chemin_fichier):
     #Detecter separateur
     with open(chemin_fichier, 'r') as file:
@@ -144,6 +142,8 @@ for point in data:
     point['pression']['dates'] = pd.to_datetime(point['pression']['dates'], format='%m/%d/%y %I:%M:%S %p')
     point['temperature']['dates'] = pd.to_datetime(point['temperature']['dates'], format='%m/%d/%y %I:%M:%S %p')
 data[0]['temperature'].head(5)
+# Définir un seuil pour le Z-score (par exemple, 3)
+threshold = int(input("Veuillez entrer une valeur pour le treshold: "))
 for x in data :
     # Traiter chaque colonne sauf la colonne des dates
     columns_to_processP = [col for col in x['pression'].columns if col != 'dates']
@@ -155,8 +155,6 @@ for x in data :
     for column_name in columns_to_processP :
         # Calculer le Z-score pour la colonne
         z_scores = np.abs(stats.zscore(x['pression'][column_name]))
-        # Définir un seuil pour le Z-score (par exemple, 3)
-        threshold = 3
         # Sélectionner les lignes avec des Z-scores inférieurs au seuil
         df_cleaned = x['pression'][z_scores < threshold] 
         # Copier les données traitées dans df_processed
@@ -165,8 +163,6 @@ for x in data :
     for column_name in columns_to_processT :
         # Calculer le Z-score pour la colonne
         z_scores = np.abs(stats.zscore(x['temperature'][column_name]))
-        # Définir un seuil pour le Z-score (par exemple, 3)
-        threshold = 3
         # Sélectionner les lignes avec des Z-scores inférieurs au seuil
         df_cleaned = x['temperature'][z_scores < threshold] 
         # Copier les données traitées dans df_processed
@@ -201,146 +197,15 @@ for x in data :
         fichier.write('Delta_h,' + '\n')
         fichier.write('Periode,' + str(x['periode']) + '\n')
 
-
-
-
-
-
-
-
-
-
-# Traitement du signal de temperature
-from scipy import signal
-
-# Butterworth filter method
-
-T_s_C = data[1]['pression2'][['temperature_stream','dates']]
-
-data_to_filter = T_s_C['temperature_stream']
-
-order = 4
-cutoff_freq = 2*(15/60/48)
-b, a = signal.butter(order, cutoff_freq, 'lowpass')
-filtered_T = signal.lfilter(b, a, data_to_filter)
-
-filtered_T_s_C = pd.DataFrame({'filtered_temperature_stream': filtered_T, 'dates': T_s_C['dates']})
-
-
-import matplotlib.pyplot as plt
-
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.scatter(T_s_C["dates"], T_s_C["temperature_stream"], color="red", label="T_s_C_original", s=5)
-ax.plot(filtered_T_s_C["dates"], filtered_T_s_C["filtered_temperature_stream"], color="blue", label="filtered_T_s_C")
-ax.set_xlabel("Date")
-ax.set_ylabel("temperature_T_s_C")
-ax.set_title("Time Series Comparison ")
-ax.legend()
-
-plt.tight_layout()
-plt.show()
-# Butterworth filter method
-
-T_s_C = data[1]['pression2'][['temperature_stream','dates']]
-
-data_to_filter = T_s_C['temperature_stream']
-
-order = 4
-cutoff_freq = 2*(15/60/48)
-b, a = signal.butter(order, cutoff_freq, 'lowpass')
-filtered_T = signal.lfilter(b, a, data_to_filter)
-
-filtered_T_s_C = pd.DataFrame({'filtered_temperature_stream': filtered_T, 'dates': T_s_C['dates']})
-
-
-import matplotlib.pyplot as plt
-
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.scatter(T_s_C["dates"], T_s_C["temperature_stream"], color="red", label="T_s_C_original", s=5)
-ax.plot(filtered_T_s_C["dates"], filtered_T_s_C["filtered_temperature_stream"], color="blue", label="filtered_T_s_C")
-ax.set_xlabel("Date")
-ax.set_ylabel("temperature_T_s_C")
-ax.set_title("Time Series Comparison ")
-ax.legend()
-
-plt.tight_layout()
-plt.show()
-# Butterworth two-way-filter method
-
-forward_filtered_signal = signal.lfilter(b, a, data_to_filter)
-
-reversed_signal = data_to_filter[::-1]
-backward_filtered_signal = signal.lfilter(b, a, reversed_signal)
-backward_filtered_signal = backward_filtered_signal[::-1]
-
-filtered_T_s_C_forward = pd.DataFrame({'filtered_temperature_stream': forward_filtered_signal, 'dates': T_s_C['dates']})
-filtered_T_s_C_backward = pd.DataFrame({'filtered_temperature_stream': backward_filtered_signal, 'dates': T_s_C['dates']})
-
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.scatter(T_s_C["dates"], T_s_C["temperature_stream"], color="red", label="T_s_C_original", s=5)
-ax.plot(filtered_T_s_C_forward["dates"], filtered_T_s_C_forward["filtered_temperature_stream"], color="blue", label="filtered_T_s_C_forward")
-ax.set_xlabel("Date")
-ax.set_ylabel("temperature_T_s_C_forward")
-ax.set_title("Time Series Comparison " )
-ax.legend()
-
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.scatter(T_s_C["dates"], T_s_C["temperature_stream"], color="red", label="T_s_C_original", s=5)
-ax.plot(filtered_T_s_C_backward["dates"], filtered_T_s_C_backward["filtered_temperature_stream"], color="blue", label="filtered_T_s_C_backward")
-ax.set_xlabel("Date")
-ax.set_ylabel("temperature_T_s_C_backward")
-ax.set_title("Time Series Comparison Point '\n'")
-ax.legend()
-
-plt.tight_layout()
-plt.show()
-# Combination of two-way-filtered signal with weight fonction
-
-L = len(data_to_filter)
-weight = np.zeros(L)
-combined_filtered_signal = np.zeros(L)
-
-a = 1.0 / L
-for i in range(L):
-    weight[i] = i * a
-
-for i in range(L):
-    combined_filtered_signal[i] = forward_filtered_signal[i] * weight[i] + backward_filtered_signal[i] * (1-weight[i])
-
-combined_filtered_T_s_C = pd.DataFrame({'combined_filtered_temperature_stream': combined_filtered_signal, 'dates': T_s_C['dates']})
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.scatter(T_s_C["dates"], T_s_C["temperature_stream"], color="red", label="T_s_C_original", s=5)
-ax.plot(combined_filtered_T_s_C["dates"], combined_filtered_T_s_C["combined_filtered_temperature_stream"], color="blue", label="combined_filtered_T_s_C")
-ax.set_xlabel("Date")
-ax.set_ylabel("temperature_T_s_C")
-ax.set_title("Time Series Comparison")
-ax.legend()
-
-plt.tight_layout()
-plt.show()
-# Regenerate dH with the filtered temperature
-filtered_dH = pd.DataFrame()
-
-k0 = float(data[2]['intercept'])
-k1 = float(data[2]['dU/dH'])
-k2 = float(data[2]['dU/dT'])
-
-U = data[2]['pression']['tension'].astype(float)
-T = combined_filtered_T_s_C["combined_filtered_temperature_stream"].astype(float)
-#point['pression']['dH'] = (1 / k1) * (U - k0 - k2 * T)
-
-# filtered_dH['filtered_dH'] = (1 / k1) * (capteur_riviere['tension_V'].astype(float) - k0 ）
-filtered_dH['filtered_dH'] = (1 / k1) * (U - k0 - k2 * T)
-filtered_dH['dates'] = T_s_C['dates']
-
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.plot(data[2]['pression2']["dates"], data[2]['pression2']["dH"], color="red", label="dH (Cleaned Data)")
-ax.plot(filtered_dH["dates"], filtered_dH["filtered_dH"], color="blue", label="filtered_dH")
-ax.set_xlabel("Date")
-ax.set_ylabel("dH")
-ax.set_title("Time Series Comparison")
-ax.legend()
-
-plt.tight_layout()
-plt.show()
+### Création du fichier `data.csv`
+for x in data :
+    if os.path.exists(x['chemin'] + '/point' + x['numero'] + '_pression_cleaned.csv') :
+        os.remove(x['chemin'] + '/point' + x['numero'] + '_pression_cleaned.csv')
+    if os.path.exists(x['chemin'] + '/point' + x['numero'] + '_temperature_cleaned.csv') :
+        os.remove(x['chemin'] + '/point' + x['numero'] + '_temperature_cleaned.csv')
+    
+    with open(x['chemin'] + '/point' + x['numero'] + '_pression_cleaned.csv', 'w') as fichier:
+        x['pression2'].to_csv(fichier, index=False)
+    with open(x['chemin'] + '/point' + x['numero'] + '_temperature_cleaned.csv', 'w') as fichier:
+        x['temperature2'].to_csv(fichier, index=False)
 

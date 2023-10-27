@@ -48,25 +48,27 @@ def convertDates(df: pd.DataFrame):
         try:
             # Convert strings to datetime objects
             new_times = pd.to_datetime(times, format=f, errors='coerce')
-            # Check for NaN values
-            if new_times.isna().any():
-                raise ValueError("NaN values found in date conversion.")
-            
-            # Compare min and max timestamps to validate the conversion
-            if new_times.min() == new_times.max():
-                df[df.columns[0]] = new_times
-                return
+            # Convert datetime series to numpy array of integers (timestamps)
+            new_ts = new_times.values.astype(np.int64)
+            # If times are not ordered, this is not the appropriate format
+            test = np.sort(new_ts) - new_ts
+            if np.sum(abs(test)) != 0 :
+                #print("Order is not the same")
+                raise ValueError()
+            # Else, the conversion is a success
+            #print("Found format ", f)
+            df[df.columns[0]] = new_times
+            return
+        
         except ValueError:
+            #print("Format ", f, " not valid")
             continue
     
-    # None of the known formats are valid
+    # None of the known format are valid
     raise ValueError("Cannot convert dates: No known formats match your data!")
 
-try:
-    convertDates(capteur_riviere)
-    convertDates(capteur_ZH)
-except ValueError as e:
-    print(e)
+convertDates(capteur_riviere)
+convertDates(capteur_ZH)
 
 # set seed for reproducibility
 np.random.seed(0)

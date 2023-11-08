@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-capteur_riviere = pd.read_csv("inversion/data_cleanded/point034_capteur_riviere_cleaned.csv", sep = ',', names = ['dates', 'tension', 'temperature_riviere'], skiprows=1)
-capteur_ZH = pd.read_csv("inversion/data_cleanded/point034_capteur_ZH_cleaned.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
+capteur_riviere = pd.read_csv("inversion/data_cleanded/point046_capteur_riviere_cleaned.csv", sep = ',', names = ['dates', 'tension', 'temperature_riviere'], skiprows=1)
+capteur_ZH = pd.read_csv("inversion/data_cleanded/point046_capteur_ZH_cleaned.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
 etalonage_capteur_riv = pd.read_csv('configuration/pressure_sensors/P508.csv')
 
 def convertDates(df: pd.DataFrame):
@@ -100,6 +100,9 @@ col_dict = {
     "inter_mode": 'lagrange'
 }
 
+print(capteur_riviere.head())
+print(capteur_ZH.head())
+
 col = Column.from_dict(col_dict)
 
 temps_en_jours = np.array([i for i in range(len(col._times))]) / (4*24)
@@ -166,7 +169,7 @@ all_priors = [
 ]
 
 col.compute_mcmc(
-    nb_iter = 500,
+    nb_iter = 5000,
     all_priors = all_priors,
     nb_cells = 100,
     sigma2=1.0

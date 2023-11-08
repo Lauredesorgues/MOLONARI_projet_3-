@@ -1,7 +1,0 @@
-Point_Name,Point36
-P_Sensor_Name,p508
-Implantation_Date,12_07_16
-Meas_date,2016-07-12 15:00:00
-River_Deb,
-Delta_h,
-Periode,21 days, 18:45:00

@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-capteur_riviere = pd.read_csv("inversion/data_cleanded/point046_capteur_riviere_cleaned.csv", sep = ',', names = ['dates', 'tension', 'temperature_riviere'], skiprows=1)
-capteur_ZH = pd.read_csv("inversion/data_cleanded/point046_capteur_ZH_cleaned.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
+capteur_riviere = pd.read_csv("inversion/data_cleanded/point14_pression_cleaned.csv", sep = ',', names = ['dates', 'tension', 'temperature_riviere'], skiprows=1)
+capteur_ZH = pd.read_csv("inversion/data_cleanded/point14_temperature_cleaned.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
 etalonage_capteur_riv = pd.read_csv('configuration/pressure_sensors/P508.csv')
 
 def convertDates(df: pd.DataFrame):
@@ -158,9 +158,9 @@ plt.show()
 #Inversion MMC
 
 priors_couche_1 = {
-    "moinslog10K": ((4, 9), .01), # (intervalle, sigma)
-    "n": ((.001, .25), .005),
-    "lambda_s": ((1, 10), .1),
+    "moinslog10K": ((4, 9), .001), # (intervalle, sigma)
+    "n": ((.01, .25), .005),
+    "lambda_s": ((1, 5), .05),
     "rhos_cs": ((1e6,1e7), 1e5),
 }
 

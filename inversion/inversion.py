@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-capteur_riviere = pd.read_csv("inversion/data_cleanded/point36_pression_cleaned.csv", sep = ',', names = ['dates', 'tension', 'temperature_riviere'], skiprows=1)
-capteur_ZH = pd.read_csv("inversion/data_cleanded/point36_temperature_cleaned.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
+capteur_riviere = pd.read_csv("inversion/data_cleanded/point48_pression_cleaned.csv", sep = ',', names = ['dates', 'tension', 'temperature_riviere'], skiprows=1)
+capteur_ZH = pd.read_csv("inversion/data_cleanded/point48_temperature_cleaned.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
 etalonage_capteur_riv = pd.read_csv('configuration/pressure_sensors/P508.csv')
 
 def convertDates(df: pd.DataFrame):

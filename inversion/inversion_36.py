@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 capteur_riviere = pd.read_csv("inversion/data_cleanded/point36_pression_cleaned.csv", sep = ',', names = ['dates', 'temperature_riviere', 'dH'], skiprows=1)
-capteur_ZH = pd.read_csv("inversion/data_cleanded/point36_temperature_cleaned.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
+capteur_ZH = pd.read_csv("inversion/data_cleanded/point36_temperature_cleaned.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30'], skiprows=1)
 etalonage_capteur_riv = pd.read_csv('configuration/pressure_sensors/P508.csv')
 
 def convertDates(df: pd.DataFrame):
@@ -93,15 +93,14 @@ capteur_riviere['temperature_riviere'] = capteur_riviere['temperature_riviere'] 
 capteur_ZH['temperature_10'] = capteur_ZH['temperature_10'] + 273.15
 capteur_ZH['temperature_20'] = capteur_ZH['temperature_20'] + 273.15
 capteur_ZH['temperature_30'] = capteur_ZH['temperature_30'] + 273.15
-capteur_ZH['temperature_40'] = capteur_ZH['temperature_40'] + 273.15
 
 # définition des attributs de colonnes
 dH_measures = list(zip(capteur_riviere['dates'],list(zip(capteur_riviere['dH'], capteur_riviere['temperature_riviere']))))
-T_measures = list(zip(capteur_ZH['dates'], capteur_ZH[['temperature_10', 'temperature_20', 'temperature_30', 'temperature_40']].to_numpy()))
+T_measures = list(zip(capteur_ZH['dates'], capteur_ZH[['temperature_10', 'temperature_20', 'temperature_30']].to_numpy()))
 
 col_dict = {
 	"river_bed": 1., 
-    "depth_sensors": [.1, .2, .3, .4],
+    "depth_sensors": [.1, .2, .3],
 	"offset": .0,
     "dH_measures": dH_measures,
 	"T_measures": T_measures,
@@ -148,10 +147,9 @@ plt.show()
 rmse = col.get_RMSE()
 print(f"RMSE premier capteur : {rmse[0]}")
 print(f"RMSE deuxième capteur : {rmse[1]}")
-print(f"RMSE troisème capteur : {rmse[2]}")
-print(f"RMSE globale : {rmse[3]}")
+print(f"RMSE globale : {rmse[2]}")
 
-fig, axes = plt.subplots(1, 3, figsize = (20, 5), sharey=True)
+fig, axes = plt.subplots(1, 2, figsize = (20, 5), sharey=True)
 
 axes[0].set_ylabel("Température en °C")
 
@@ -175,7 +173,7 @@ priors_couche_1 = {
 }
 
 all_priors = [
-    ['Couche 1', 0.4, priors_couche_1]
+    ['Couche 1', 0.3, priors_couche_1]
 ]
 
 col.compute_mcmc(
@@ -205,7 +203,7 @@ col.compute_solve_transi(bestLayers, nb_cells=100)
 
 col.get_RMSE()
 
-fig, axes = plt.subplots(1, 3, figsize = (20, 5), sharey=True)
+fig, axes = plt.subplots(1, 2, figsize = (20, 5), sharey=True)
 
 axes[0].set_ylabel("Température en °C")
 
@@ -222,8 +220,7 @@ plt.show()
 rmse = col.get_RMSE()
 print(f"RMSE premier capteur : {rmse[0]}")
 print(f"RMSE deuxième capteur : {rmse[1]}")
-print(f"RMSE troisème capteur : {rmse[2]}")
-print(f"RMSE globale : {rmse[3]}")
+print(f"RMSE globale : {rmse[2]}")
 
 col.plot_CALC_results(nt=len(col._times))
 plt.show()
@@ -231,7 +228,7 @@ plt.show()
 
 #Affichage des quantiles 
 
-fig, axes = plt.subplots(2, 3, figsize=(20, 10), sharex='col', sharey='row')
+fig, axes = plt.subplots(2, 2, figsize=(20, 10), sharex='col', sharey='row')
 
 axes[0, 0].set_xlabel("Temps (j)")
 axes[1, 0].set_ylabel("Débit en m/s")
@@ -243,7 +240,6 @@ for i, q in enumerate(col.get_quantiles()):
     axes[1, i].imshow(col.get_flows_quantile(q), aspect='auto', cmap='Spectral_r', extent=[0, temps_en_jours[-1], col._real_z[-1], col._real_z[0]])
     axes[1, i].set_title(f"Quantile de débit : {100*q} %")
     axes[1, i].set_xlabel("Temps (j)")
-    axes[1, i].colorbar()
 plt.show()
 
 fig, axes = plt.subplots(1, 3, figsize = (20, 5), sharey=True)
@@ -257,7 +253,6 @@ for i, id in enumerate(col.get_id_sensors()):
         axes[i].plot(temps_en_jours, col.get_temps_quantile(q)[id] - 273.15, label=f"Quantile {q}")
     axes[i].legend()
     axes[i].set_title(f"Capteur {i+1}")
-    axes[i].colorbar()
 
 plt.subplots_adjust(wspace=0.05)
 plt.show()

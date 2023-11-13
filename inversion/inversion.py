@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-capteur_riviere = pd.read_csv("inversion/data_cleanded/point36_pression_cleaned.csv", sep = ',', names = ['dates', 'tension', 'temperature_riviere'], skiprows=1)
+capteur_riviere = pd.read_csv("inversion/data_cleanded/point36_pression_cleaned.csv", sep = ',', names = ['dates', 'temperature_riviere', 'dH'], skiprows=1)
 capteur_ZH = pd.read_csv("inversion/data_cleanded/point36_temperature_cleaned.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
 etalonage_capteur_riv = pd.read_csv('configuration/pressure_sensors/P508.csv')
 
@@ -69,14 +69,24 @@ def convertDates(df: pd.DataFrame):
 convertDates(capteur_riviere)
 convertDates(capteur_ZH)
 
+'''
+# on met en mémoire la totalité des mesures de pression et de température
+capteur_riviere_tot = capteur_riviere
+capteur_ZH_tot = capteur_ZH
+
+# on ne garde que les mesures entre 2019-06-01 00:00:00 et 2019-06-10 00:00:00 pour réduire le temps de calcul
+capteur_riviere = capteur_riviere[4000:5000]
+capteur_ZH = capteur_ZH[4000:5000]
+'''
+
 # set seed for reproducibility
 np.random.seed(0)
 
 # conversion des mesures de pression
-intercept = float(etalonage_capteur_riv['P508'][2])
-a = float(etalonage_capteur_riv['P508'][3])
-b = float(etalonage_capteur_riv['P508'][4])
-capteur_riviere['dH'] = (capteur_riviere['tension'].astype(float)-intercept-capteur_riviere['temperature_riviere'].astype(float)*b)/a
+#intercept = float(etalonage_capteur_riv['P508'][2])
+#a = float(etalonage_capteur_riv['P508'][3])
+#b = float(etalonage_capteur_riv['P508'][4])
+#capteur_riviere['dH'] = (capteur_riviere['tension'].astype(float)-intercept-capteur_riviere['temperature_riviere'].astype(float)*b)/a
 
 # conversion mesures de tempétratures
 capteur_riviere['temperature_riviere'] = capteur_riviere['temperature_riviere'] + 273.15
@@ -169,10 +179,11 @@ all_priors = [
 ]
 
 col.compute_mcmc(
-    nb_iter = 500,
+    nb_iter = 1000,
     all_priors = all_priors,
     nb_cells = 100,
-    sigma2=1.0
+    sigma2=1.0,
+    nb_chain=10
 )
 
 fig, axes = plt.subplots(2, 4, figsize=(30, 20))
@@ -232,6 +243,7 @@ for i, q in enumerate(col.get_quantiles()):
     axes[1, i].imshow(col.get_flows_quantile(q), aspect='auto', cmap='Spectral_r', extent=[0, temps_en_jours[-1], col._real_z[-1], col._real_z[0]])
     axes[1, i].set_title(f"Quantile de débit : {100*q} %")
     axes[1, i].set_xlabel("Temps (j)")
+    axes[1, i].colorbar()
 plt.show()
 
 fig, axes = plt.subplots(1, 3, figsize = (20, 5), sharey=True)
@@ -245,6 +257,7 @@ for i, id in enumerate(col.get_id_sensors()):
         axes[i].plot(temps_en_jours, col.get_temps_quantile(q)[id] - 273.15, label=f"Quantile {q}")
     axes[i].legend()
     axes[i].set_title(f"Capteur {i+1}")
+    axes[i].colorbar()
 
 plt.subplots_adjust(wspace=0.05)
 plt.show()

@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-capteur_riviere = pd.read_csv("inversion/data_cleanded/point36_pression_cleaned.csv", sep = ',', names = ['dates', 'temperature_riviere', 'dH'], skiprows=1)
-capteur_ZH = pd.read_csv("inversion/data_cleanded/point36_temperature_cleaned.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
+capteur_riviere = pd.read_csv("/Users/marcoul/Desktop/Mines_2A/Molonari/MOLONARI_projet_3-/data_traite/point47_pression_traité.csv", sep = ',', names = ['dates', 'temperature_riviere', 'dH'], skiprows=1)
+capteur_ZH = pd.read_csv("/Users/marcoul/Desktop/Mines_2A/Molonari/MOLONARI_projet_3-/data_traite/point47_temperature_traité.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
 etalonage_capteur_riv = pd.read_csv('configuration/pressure_sensors/P508.csv')
 
 def convertDates(df: pd.DataFrame):
@@ -138,8 +138,10 @@ im = ax.imshow(
     temperatures,
     aspect = "auto",
     extent = [0, temps_en_jours[-1], col.depths_solve[-1], col.depths_solve[0]],
-    cmap = "Spectral_r"
+    cmap = "seismic"
 )
+cbar = fig.colorbar(im, ax=ax)
+cbar.set_label("Température en °C")
 
 col.plot_CALC_results(nt=len(col._times))
 
@@ -200,6 +202,9 @@ for id_layer, layer_distribs in enumerate(col.get_all_params()):
 plt.show()
 
 bestLayers = col.get_best_layers()
+quantiles = col.get_quantiles()
+print(f"Meilleures couches : {bestLayers}")
+print(f"Quantiles : {quantiles}")
 
 col.compute_solve_transi(bestLayers, nb_cells=100)
 
@@ -237,13 +242,15 @@ axes[0, 0].set_xlabel("Temps (j)")
 axes[1, 0].set_ylabel("Débit en m/s")
 
 for i, q in enumerate(col.get_quantiles()):
-    axes[0, i].imshow(col.get_temps_quantile(q), aspect='auto', cmap='Spectral_r', extent=[0, temps_en_jours[-1], col._real_z[-1], col._real_z[0]])
+    im = axes[0, i].imshow(col.get_temps_quantile(q), aspect='auto', cmap='seismic', extent=[0, temps_en_jours[-1], col._real_z[-1], col._real_z[0]])
     axes[0, i].set_title(f"Quantile de température : {100*q} %")
+    fig.colorbar(im, ax=axes[0, i])  # Ajout de la barre de couleur
 
-    axes[1, i].imshow(col.get_flows_quantile(q), aspect='auto', cmap='Spectral_r', extent=[0, temps_en_jours[-1], col._real_z[-1], col._real_z[0]])
+    im = axes[1, i].imshow(col.get_flows_quantile(q), aspect='auto', cmap='Spectral_r', extent=[0, temps_en_jours[-1], col._real_z[-1], col._real_z[0]])
     axes[1, i].set_title(f"Quantile de débit : {100*q} %")
     axes[1, i].set_xlabel("Temps (j)")
-    axes[1, i].colorbar()
+    fig.colorbar(im, ax=axes[1, i])  # Ajout de la barre de couleur
+    
 plt.show()
 
 fig, axes = plt.subplots(1, 3, figsize = (20, 5), sharey=True)
@@ -257,7 +264,6 @@ for i, id in enumerate(col.get_id_sensors()):
         axes[i].plot(temps_en_jours, col.get_temps_quantile(q)[id] - 273.15, label=f"Quantile {q}")
     axes[i].legend()
     axes[i].set_title(f"Capteur {i+1}")
-    axes[i].colorbar()
 
 plt.subplots_adjust(wspace=0.05)
 plt.show()

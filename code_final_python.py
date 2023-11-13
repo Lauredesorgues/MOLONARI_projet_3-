@@ -116,6 +116,9 @@ for x in data :
     colonnesT = ['dates']
     for num in profondeur :
         colonnesT.append('Temp_profondeur_'+ str(num))
+    print(colonnesT)
+    print(x['temperature'].columns)
+    print(x)
     x['temperature'].columns = colonnesT
     colonnesP = ['dates', 'tension', 'temperature_stream']
     x['pression'].columns = colonnesP

@@ -69,7 +69,7 @@ def convertDates(df: pd.DataFrame):
 convertDates(capteur_riviere)
 convertDates(capteur_ZH)
 
-
+'''
 # on met en mémoire la totalité des mesures de pression et de température
 capteur_riviere_tot = capteur_riviere.copy()
 capteur_ZH_tot = capteur_ZH.copy()
@@ -77,7 +77,7 @@ capteur_ZH_tot = capteur_ZH.copy()
 # on ne garde que les mesures entre 2019-06-01 00:00:00 et 2019-06-10 00:00:00 pour réduire le temps de calcul
 capteur_riviere = capteur_riviere[4000:5000]
 capteur_ZH = capteur_ZH[4000:5000]
-
+'''
 
 # set seed for reproducibility
 np.random.seed(0)
@@ -170,10 +170,10 @@ plt.show()
 #Inversion MMC
 
 priors_couche_1 = {
-    "moinslog10K": ((4, 9), .01), # (intervalle, sigma)
+    "moinslog10K": ((6, 11), .01), # (intervalle, sigma)
     "n": ((.001, .25), .005),
-    "lambda_s": ((1, 10), .1),
-    "rhos_cs": ((1e6,1e7), 1e5),
+    "lambda_s": ((1, 9), .1),
+    "rhos_cs": ((5e5,1e7), 1e5),
 }
 
 
@@ -182,7 +182,7 @@ all_priors = [
 ]
 
 col.compute_mcmc(
-    nb_iter = 1000,
+    nb_iter = 500,
     all_priors = all_priors,
     nb_cells = 100,
     sigma2=1.0,
@@ -292,6 +292,8 @@ ecart_interquartile = col.get_flows_quantile(0.95)[n,:] - col.get_flows_quantile
 mean_ecart_interquartile = np.mean(ecart_interquartile)/np.mean(col.get_flows_solve(col._real_z[n])) 
 print("Ecart interquantile relatif à la profondeur 0 : ", mean_ecart_interquartile)
 
+
+'''
 #Affichage sur totalité
 
 capteur_riviere = capteur_riviere_tot.copy()
@@ -368,4 +370,4 @@ for i, id in enumerate(col.get_id_sensors()):
     axes[i].set_title(f"Capteur {i+1}")
 
 plt.subplots_adjust(wspace=0.05)
-plt.show()
+plt.show()'''

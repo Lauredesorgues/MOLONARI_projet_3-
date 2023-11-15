@@ -1,6 +1,6 @@
 Point_Name,Point50
 P_Sensor_Name,p051-1
-Implantation_Date,131023
+Implantation_Date,13_10_23
 Meas_date,2023-10-15 11:15:00
 River_Deb,
 Delta_h,

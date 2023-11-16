@@ -1,6 +1,6 @@
-Couche 1 : ends at 0.4 m. Parametres(moinslog10K=8.829488, n=0.010865014, lambda_s=4.94345, rhos_cs=1009986.2)
+Couche 1 : ends at 0.4 m. Parametres(moinslog10K=9.234397, n=0.0077978037, lambda_s=8.717235, rhos_cs=547835.8)
 Done.
-RMSE premier capteur : 1.2975079475008309
-RMSE deuxième capteur : 0.7520183469186253
-RMSE troisème capteur : 0.35930089121534303
-RMSE globale : 0.8903474225189064
+RMSE premier capteur : 1.2918986917396913
+RMSE deuxième capteur : 0.7442825598748533
+RMSE troisème capteur : 0.3538889181676145
+RMSE globale : 0.8847214486406508

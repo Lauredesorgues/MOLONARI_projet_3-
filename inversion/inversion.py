@@ -171,9 +171,9 @@ plt.show()
 
 priors_couche_1 = {
     "moinslog10K": ((6, 11), .01), # (intervalle, sigma)
-    "n": ((.001, .25), .005),
-    "lambda_s": ((1, 9), .1),
-    "rhos_cs": ((5e5,1e7), 1e5),
+    "n": ((.001, .5), .005),
+    "lambda_s": ((.1, 9), .1),
+    "rhos_cs": ((5e6,5e7), 1e5),
 }
 
 

@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-capteur_riviere = pd.read_csv("/Users/marcoul/Desktop/Mines_2A/Molonari/MOLONARI_projet_3-/data_traite/point47_pression_traité.csv", sep = ',', names = ['dates', 'temperature_riviere', 'dH'], skiprows=1)
-capteur_ZH = pd.read_csv("/Users/marcoul/Desktop/Mines_2A/Molonari/MOLONARI_projet_3-/data_traite/point47_temperature_traité.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
+capteur_riviere = pd.read_csv("/Users/marcoul/Desktop/Mines_2A/Molonari/MOLONARI_projet_3-/data_traite/point51_pression_traité.csv", sep = ',', names = ['dates', 'temperature_riviere', 'dH'], skiprows=1)
+capteur_ZH = pd.read_csv("/Users/marcoul/Desktop/Mines_2A/Molonari/MOLONARI_projet_3-/data_traite/point51_temperature_traité.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
 etalonage_capteur_riv = pd.read_csv('configuration/pressure_sensors/P508.csv')
 
 def convertDates(df: pd.DataFrame):
@@ -71,8 +71,8 @@ convertDates(capteur_ZH)
 
 '''
 # on met en mémoire la totalité des mesures de pression et de température
-capteur_riviere_tot = capteur_riviere
-capteur_ZH_tot = capteur_ZH
+capteur_riviere_tot = capteur_riviere.copy()
+capteur_ZH_tot = capteur_ZH.copy()
 
 # on ne garde que les mesures entre 2019-06-01 00:00:00 et 2019-06-10 00:00:00 pour réduire le temps de calcul
 capteur_riviere = capteur_riviere[4000:5000]
@@ -170,18 +170,19 @@ plt.show()
 #Inversion MMC
 
 priors_couche_1 = {
-    "moinslog10K": ((4, 9), .001), # (intervalle, sigma)
-    "n": ((.01, .25), .005),
-    "lambda_s": ((1, 5), .05),
-    "rhos_cs": ((1e6,1e7), 1e5),
+    "moinslog10K": ((6, 11), .01), # (intervalle, sigma)
+    "n": ((.001, .5), .005),
+    "lambda_s": ((.1, 9), .1),
+    "rhos_cs": ((5e6,5e7), 1e5),
 }
+
 
 all_priors = [
     ['Couche 1', 0.4, priors_couche_1]
 ]
 
 col.compute_mcmc(
-    nb_iter = 1000,
+    nb_iter = 500,
     all_priors = all_priors,
     nb_cells = 100,
     sigma2=1.0,
@@ -270,7 +271,7 @@ plt.show()
 
 
 """
-On va maintenant afficher un graphe avecv les quantiles de débit à profondeur fixée
+On va maintenant afficher un graphe avec les quantiles de débit à profondeur fixée
 """
 
 n = 0
@@ -284,7 +285,89 @@ plt.legend()
 plt.title(f"Quantiles de débit à {col._real_z[n]} m de profondeur")
 plt.show()
 
+
+
 #Calcul écart interquartile
 ecart_interquartile = col.get_flows_quantile(0.95)[n,:] - col.get_flows_quantile(0.05)[n,:]
 mean_ecart_interquartile = np.mean(ecart_interquartile)/np.mean(col.get_flows_solve(col._real_z[n])) 
 print("Ecart interquantile relatif à la profondeur 0 : ", mean_ecart_interquartile)
+
+
+'''
+#Affichage sur totalité
+
+capteur_riviere = capteur_riviere_tot.copy()
+capteur_ZH = capteur_ZH_tot.copy()
+
+# set seed for reproducibility
+np.random.seed(0)
+
+# conversion mesures de tempétratures
+capteur_riviere['temperature_riviere'] = capteur_riviere['temperature_riviere'] + 273.15
+capteur_ZH['temperature_10'] = capteur_ZH['temperature_10'] + 273.15
+capteur_ZH['temperature_20'] = capteur_ZH['temperature_20'] + 273.15
+capteur_ZH['temperature_30'] = capteur_ZH['temperature_30'] + 273.15
+capteur_ZH['temperature_40'] = capteur_ZH['temperature_40'] + 273.15
+
+# définition des attributs de colonnes
+dH_measures = list(zip(capteur_riviere['dates'],list(zip(capteur_riviere['dH'], capteur_riviere['temperature_riviere']))))
+T_measures = list(zip(capteur_ZH['dates'], capteur_ZH[['temperature_10', 'temperature_20', 'temperature_30', 'temperature_40']].to_numpy()))
+
+col_dict = {
+	"river_bed": 1., 
+    "depth_sensors": [.1, .2, .3, .4],
+	"offset": .0,
+    "dH_measures": dH_measures,
+	"T_measures": T_measures,
+    "sigma_meas_P": None,
+    "sigma_meas_T": None,
+    "inter_mode": 'lagrange'
+}
+
+print(capteur_riviere.head())
+print(capteur_ZH.head())
+
+col = Column.from_dict(col_dict)
+
+temps_en_jours = np.array([i for i in range(len(col._times))]) / (4*24)
+
+params = bestLayers
+
+col.compute_solve_transi(params, nb_cells=100)
+
+temperatures = col.get_temps_solve() - 273.15
+
+fig, ax = plt.subplots(figsize=(10, 5), facecolor = 'w')
+
+im = ax.imshow(
+    temperatures,
+    aspect = "auto",
+    extent = [0, temps_en_jours[-1], col.depths_solve[-1], col.depths_solve[0]],
+    cmap = "seismic"
+)
+cbar = fig.colorbar(im, ax=ax)
+cbar.set_label("Température en °C")
+
+col.plot_CALC_results(nt=len(col._times))
+
+plt.show()
+
+rmse = col.get_RMSE()
+print(f"RMSE premier capteur : {rmse[0]}")
+print(f"RMSE deuxième capteur : {rmse[1]}")
+print(f"RMSE troisème capteur : {rmse[2]}")
+print(f"RMSE globale : {rmse[3]}")
+
+fig, axes = plt.subplots(1, 3, figsize = (20, 5), sharey=True)
+
+axes[0].set_ylabel("Température en °C")
+
+for i, id in enumerate(col.get_id_sensors()):
+    axes[i].set_xlabel("Temps (j)")
+    axes[i].plot(temps_en_jours, col._T_measures[:, i] - 273.15, label="Mesures")
+    axes[i].plot(temps_en_jours, col.get_temps_solve()[id] - 273.15, label="Modèle")
+    axes[i].legend()
+    axes[i].set_title(f"Capteur {i+1}")
+
+plt.subplots_adjust(wspace=0.05)
+plt.show()'''

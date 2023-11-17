@@ -1304,7 +1304,7 @@ class Column:  # colonne de sédiments verticale entre le lit de la rivière et 
             self._temps[:, :nt] - K_offset, aspect="auto", cmap="Spectral_r"
         )
         ax[0, 2].set_xlabel("t (15min)", fontsize=fontsize)
-        ax[0, 2].set_ylabel("z (m)", fontsize=fontsize)
+        ax[0, 2].set_ylabel("Depth (m)", fontsize=fontsize)
         ax[0, 2].xaxis.tick_top()
         ax[0, 2].xaxis.set_label_position("top")
         ax[0, 2].secax = ax[0, 2].secondary_xaxis(

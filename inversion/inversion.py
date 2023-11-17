@@ -1,5 +1,7 @@
 """
 Ce code effectue une inversion de donénes dans le cas d'une colonne de sol avec une seule couche
+Il faut fournir les données de pression et de température dans capteur_riviere et capteur_ZH
+Voir la notice d'utilisation pour comprendre le focntionnement du code
 """
 
 from core import *
@@ -14,9 +16,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-capteur_riviere = pd.read_csv("/Users/marcoul/Desktop/Mines_2A/Molonari/MOLONARI_projet_3-/data_traite/point51_pression_traité.csv", sep = ',', names = ['dates', 'temperature_riviere', 'dH'], skiprows=1)
-capteur_ZH = pd.read_csv("/Users/marcoul/Desktop/Mines_2A/Molonari/MOLONARI_projet_3-/data_traite/point51_temperature_traité.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
-etalonage_capteur_riv = pd.read_csv('configuration/pressure_sensors/P508.csv')
+capteur_riviere = pd.read_csv("data_traite/point51_pression_traité.csv", sep = ',', names = ['dates', 'temperature_riviere', 'dH'], skiprows=1)
+capteur_ZH = pd.read_csv("data_traite/point51_temperature_traité.csv", sep = ',', names = ['dates', 'temperature_10', 'temperature_20', 'temperature_30', 'temperature_40'], skiprows=1)
 
 def convertDates(df: pd.DataFrame):
     """
@@ -81,12 +82,6 @@ capteur_ZH = capteur_ZH[4000:5000]
 
 # set seed for reproducibility
 np.random.seed(0)
-
-# conversion des mesures de pression
-#intercept = float(etalonage_capteur_riv['P508'][2])
-#a = float(etalonage_capteur_riv['P508'][3])
-#b = float(etalonage_capteur_riv['P508'][4])
-#capteur_riviere['dH'] = (capteur_riviere['tension'].astype(float)-intercept-capteur_riviere['temperature_riviere'].astype(float)*b)/a
 
 # conversion mesures de tempétratures
 capteur_riviere['temperature_riviere'] = capteur_riviere['temperature_riviere'] + 273.15
@@ -179,27 +174,27 @@ priors_couche_1 = {
 
 all_priors = [
     ['Couche 1', 0.4, priors_couche_1]
-]
+] # Le modèle multi-couche ne fonctionne pas sur cette version du code, voir le travail du groupe calculs pour une version fonctionnelle
 
 col.compute_mcmc(
-    nb_iter = 500,
+    nb_iter = 100,
     all_priors = all_priors,
     nb_cells = 100,
     sigma2=1.0,
     nb_chain=10
 )
 
-fig, axes = plt.subplots(2, 4, figsize=(30, 20))
+fig, axes = plt.subplots(1, 4, figsize=(30, 20))
 
 for id_layer, layer_distribs in enumerate(col.get_all_params()):
-    axes[id_layer, 0].hist(layer_distribs[::, 0])
-    axes[id_layer, 0].set_title(f"Couche {id_layer + 1} : moinslog10K")
-    axes[id_layer, 1].hist(layer_distribs[::, 1])
-    axes[id_layer, 1].set_title(f"Couche {id_layer + 1} : n")
-    axes[id_layer, 2].hist(layer_distribs[::, 2])
-    axes[id_layer, 2].set_title(f"Couche {id_layer + 1} : lambda_s")
-    axes[id_layer, 3].hist(layer_distribs[::, 3])
-    axes[id_layer, 3].set_title(f"Couche {id_layer + 1} : rhos_cs")
+    axes[0].hist(layer_distribs[::, 0])
+    axes[0].set_title(f"Couche {id_layer + 1} : moinslog10K")
+    axes[1].hist(layer_distribs[::, 1])
+    axes[1].set_title(f"Couche {id_layer + 1} : n")
+    axes[2].hist(layer_distribs[::, 2])
+    axes[2].set_title(f"Couche {id_layer + 1} : lambda_s")
+    axes[3].hist(layer_distribs[::, 3])
+    axes[3].set_title(f"Couche {id_layer + 1} : rhos_cs")
 plt.show()
 
 bestLayers = col.get_best_layers()
@@ -287,14 +282,8 @@ plt.show()
 
 
 
-#Calcul écart interquartile
-ecart_interquartile = col.get_flows_quantile(0.95)[n,:] - col.get_flows_quantile(0.05)[n,:]
-mean_ecart_interquartile = np.mean(ecart_interquartile)/np.mean(col.get_flows_solve(col._real_z[n])) 
-print("Ecart interquantile relatif à la profondeur 0 : ", mean_ecart_interquartile)
-
-
 '''
-#Affichage sur totalité
+#Affichage sur totalité, ce code ne sert que pour le point 48 où l'on fait tourner l'inversion sur une partie restrainte des données pour des raisons de temps de calcul
 
 capteur_riviere = capteur_riviere_tot.copy()
 capteur_ZH = capteur_ZH_tot.copy()

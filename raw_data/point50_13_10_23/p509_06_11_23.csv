@@ -1,5 +1,5 @@
-﻿"Titre de tracé : 13_10_P9"
-"#","Date Heure, GMT+02:00","Tension, V (LGR S/N: 21065779, SEN S/N: 21065779, LBL: pression)","Temp., °C (LGR S/N: 21065779, SEN S/N: 21065779, LBL: temperature)","Hôte connecté (LGR S/N: 21065779)","Arrêté (LGR S/N: 21065779)","Fin de fichier (LGR S/N: 21065779)"
+﻿"Titre de tracé : p051-1"
+"#","Date Heure, GMT+01:00","Tension, V (LGR S/N: 21065779, SEN S/N: 21065779, LBL: pression)","Temp., °C (LGR S/N: 21065779, SEN S/N: 21065779, LBL: temperature)","Hôte connecté (LGR S/N: 21065779)","Arrêté (LGR S/N: 21065779)","Fin de fichier (LGR S/N: 21065779)"
 1,10/19/23 06:00:00 PM,2.11601,14.828,,,
 2,10/19/23 06:15:00 PM,1.81380,14.782,,,
 3,10/19/23 06:30:00 PM,1.67681,14.731,,,

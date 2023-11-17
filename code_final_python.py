@@ -122,7 +122,7 @@ for x in data :
     x['temperature'].columns = colonnesT
     colonnesP = ['dates', 'tension', 'temperature_stream']
     x['pression'].columns = colonnesP
-    
+    print(data[0]['pression2'])
 
 ## Conversion de valeurs de tension a differance de charge
 for point in data:
@@ -142,8 +142,8 @@ for x in data :
     x['pression'] = x['pression'].dropna(axis = 0, how='any')
 # Conversion dans le bon format date
 for point in data:
-    point['pression']['dates'] = pd.to_datetime(point['pression']['dates'], format='%m/%d/%y %I:%M:%S %p')
-    point['temperature']['dates'] = pd.to_datetime(point['temperature']['dates'], format='%m/%d/%y %I:%M:%S %p')
+    point['pression']['dates'] = pd.to_datetime(point['pression']['dates'], format='mixed')
+    point['temperature']['dates'] = pd.to_datetime(point['temperature']['dates'], format='mixed')
 data[0]['temperature'].head(5)
 # Définir un seuil pour le Z-score (par exemple, 3)
 threshold = int(input("Veuillez entrer une valeur pour le treshold: "))

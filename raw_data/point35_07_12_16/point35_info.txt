@@ -4,4 +4,4 @@ Implantation_Date,07_12_16
 Meas_date,2016-07-12 13:45:00
 River_Deb,
 Delta_h,
-Periode,21 days, 22:00:00
+Periode,19 days, 0:15:00
